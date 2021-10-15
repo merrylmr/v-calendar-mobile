@@ -65,7 +65,7 @@ import {weekList} from './config.js'
 import {MIN_HEIGHT, MAX_HEIGHT} from './const.js'
 
 export default {
-  name: 'v-calender',
+  name: 'v-calendar-mobile',
   data() {
     return {
       weekList,

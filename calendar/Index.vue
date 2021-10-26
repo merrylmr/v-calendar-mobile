@@ -31,22 +31,21 @@
                     :key="weekIndex">
                     <li v-for="(day,dayIndex) in week"
                         :key="dayIndex"
-                        :class="{'is-checked':checkedDay===day.date, 'is-today':day.isToday }"
+                        class="week-day"
+                        :class="{
+                          'is-checked':checkedDay===day.date,
+                        'is-today':day.isToday,
+                         'other-month':day.otherMonth}"
                         @click.prevent.stop="chooseDay(day.year,day.month,day.day,day.otherMonth,day.mode)">
-                        <div class="week-day"
-                             :class="{'is-checked':checkedDay===day.date,
-                                      'other-month':day.otherMonth,
-                                      'is-today':day.isToday}">
-                            <slot name="dateCell" :day="day">
+                      <slot name="dateCell" :day="day">
                                 <span class="one-day">
                                     <i v-if="day.isToday" class="day today">今</i>
                                     <i v-else class="day">{{ day.day }}</i>
                                 </span>
-                            </slot>
-                            <slot name="record" :day="day">
-                                <span v-if="day.thing" class="record"></span>
-                            </slot>
-                        </div>
+                      </slot>
+                      <slot name="record" :day="day">
+                        <span v-if="day.thing" class="record"></span>
+                      </slot>
                     </li>
                 </ul>
             </div>
@@ -325,6 +324,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import "./assets/base.scss";
 .calendar-box {
   position: relative;
   background: #fff;
@@ -337,7 +337,7 @@ export default {
   display: flex;
   height: 30px;
   line-height: 30px;
-  padding-left: 0;
+
 }
 
 .calendar-head li {
@@ -345,11 +345,12 @@ export default {
   text-align: center;
   color: #9AA5B1;
   font-size: 13px;
-  list-style: none;
 }
 
 .calendar-today {
-  @include flex(space-between, center);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   height: 50px;
   font-size: 16px;
@@ -382,20 +383,19 @@ export default {
   width: 100%;
   height: 100%;
   top: 0;
-}
 
-.swiper-item:nth-child(1) {
-  left: -100%;
-}
+  &:nth-child(1) {
+    left: -100%;
+  }
 
-.swiper-item:nth-child(2) {
-  left: 0;
-}
+  &:nth-child(2) {
+    left: 0;
+  }
 
-.swiper-item:nth-child(3) {
-  left: 100%;
+  &:nth-child(3) {
+    left: 100%;
+  }
 }
-
 .month ul {
   display: flex;
   margin: 0;
@@ -408,7 +408,6 @@ export default {
 
 .month li {
   flex: 1;
-  flex-grow: 1;
   color: #333;
   overflow: hidden;
 }
@@ -417,11 +416,10 @@ export default {
   position: relative;
   width: 32px;
   height: 32px;
-  margin: auto;
   text-align: center;
-  border: 0;
   overflow: hidden;
   z-index: 1;
+  @include flex(center);
 
   ::v-deep.record {
     display: inline-block;
@@ -434,43 +432,39 @@ export default {
     border-radius: 50%;
     background-color: red;
   }
-}
 
-
-.week-day i {
-  display: block;
-  text-align: center;
-  font-style: normal;;
-  font-size: 14px;
-  line-height: 32px;
-  width: 32px;
-  height: 32px;
-  border: 0.5px solid #E4E7EB;
-  border-radius: 2px;
-}
-
-.week-day.is-checked {
-  i {
-    color: #fff !important;
-    background-color: $--color-primary;
+  .day {
+    display: block;
+    text-align: center;
+    font-style: normal;;
+    font-size: 14px;
+    line-height: 32px;
+    width: 32px;
+    height: 32px;
+    border: 0.5px solid #E4E7EB;
+    border-radius: 2px;
   }
-}
 
-.week-day.is-checked.is-today {
-  .today {
-    color: #fff;
+  &.is-checked {
+    .day {
+      color: #fff !important;
+      background-color: #409eff;
+    }
+
+    .today {
+      color: #fff;
+    }
   }
-}
 
+  &.other-month {
+    color: #ccc;
+  }
 
-.other-month {
-  color: #ccc;
-}
-
-.is-today {
-  .today {
-    font-size: 16px;
-    color: $--color-primary;
+  &.is-today {
+    .today {
+      font-size: 16px;
+      color: #409eff;
+    }
   }
 }
 </style>

@@ -18,7 +18,6 @@
             >
               <img v-show="mode==='week'" src="./assets/arrow-down.svg">
               <img v-show="mode==='month'" src="./assets/minus.svg">
-              <!--                <van-icon :name="mode==='week'?'arrow-down':'minus'"/>-->
             </div>
         </div>
     </transition>
@@ -242,9 +241,10 @@ export default {
 }
 </script>
 <style scoped lang="scss">
+
 .calendarBox {
   position: relative;
-  height: 282px;
+  height: 262px;
   z-index: 99;
 }
 
@@ -260,12 +260,14 @@ export default {
   z-index: 100;
   bottom: 0;
   background-color: #fff;
-  @include flex(center, center);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
 
-img {
-  width: 20px;
-}
+  img {
+    width: 20px;
+  }
 
 }
 </style>

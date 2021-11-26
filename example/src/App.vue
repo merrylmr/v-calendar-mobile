@@ -1,12 +1,21 @@
 <template>
   <div id="app">
-    <v-calendar-mobile :change-mode="true"></v-calendar-mobile>
+    <v-calendar-mobile
+        mode="month"
+        :change-mode="true"
+        @change="dateChangeHandle">
+    </v-calendar-mobile>
   </div>
 </template>
 
 <script>
 export default {
   name: 'App',
+  methods: {
+    dateChangeHandle(date) {
+      console.log('dateChangeHandle', date)
+    }
+  }
 }
 </script>
 

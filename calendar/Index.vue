@@ -17,7 +17,7 @@
     <calendarContent
         :style="{height:calenderInnerH+'px'}"
         ref="calendar_swiper"
-        :checkDate="currentDate"
+        :checkDate="selectedDate"
         :mode="curMode"
         :calenderInnerH="calenderInnerH"
         :changeMode="changeMode"
@@ -33,7 +33,7 @@
               :key="dayIndex"
               class="week-day"
               :class="{
-                        'is-checked':formatTime===day.date,
+                        'is-checked':selectedTime===day.date,
                         'is-today':day.isToday,
                          'other-month':day.otherMonth
              }"
@@ -70,6 +70,7 @@ export default {
     return {
       weekList,
       currentDate: new Date(),
+      selectedDate: new Date(),
       today: new Date(),
       // 当前日期
       monthList: [],
@@ -81,26 +82,37 @@ export default {
     }
     },
     props: {
-        changeMode: {
-            type: Boolean,
-        },
-        recordList: {
-            type: Array,
-            default: () => []
-        },
-        mode: {
-            type: String,
-            default: 'week'
-        }
+      changeMode: {
+        type: Boolean,
+      },
+      recordList: {
+        type: Array,
+        default: () => []
+      },
+      mode: {
+        type: String,
+        default: 'week'
+      },
+      swiperActive: {
+        type: Boolean,
+        default: true
+      }
     },
     components: {
         calendarContent
     },
     computed: {
       // 当前选中日期(标准时间转xxxx年xx月xx日)
-        formatTime() {
-          return this.formatDateTime(this.currentDate);
+      formatTime() {
+        if (this.curMode === 'month') {
+          return this.formatDateTime(this.currentDate, 'yyyy-mm');
+        } else {
+          return this.formatDateTime(this.currentDate)
         }
+      },
+      selectedTime() {
+        return this.formatDateTime(this.selectedDate)
+      }
     },
     created() {
       this.curMode = this.mode;
@@ -134,65 +146,77 @@ export default {
           // 为了PC端点击事件和移动冲突
           if (!this.can_click) return
           if (otherMonth && mode === 'month') {
-            const tempDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - otherMonth, 0)
+            const tempDate = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth() - otherMonth, 0)
             const maxDay = tempDate.getDate()
             const _day = maxDay < day ? maxDay : day
             this.currentDate = new Date(year, month - otherMonth, _day)
             this.changeIndex(otherMonth, true)
+            this.selectedDate = new Date(year, month, day)
           } else if (otherMonth && mode === 'week') {
-            this.currentDate = new Date(year, month, day)
+            this.selectedDate = new Date(year, month, day)
+            this.currentDate = this.selectedDate
           } else {
-            this.currentDate = new Date(year, month, day)
+            this.selectedDate = new Date(year, month, day)
+            this.currentDate = this.selectedDate
           }
-          this.$emit('change', this.currentDate)
+          this.$emit('change', this.selectedDate)
         },
-        formatDateTime(date) {
-            let y = date.getFullYear();
-            let m = date.getMonth() + 1;
-            m = m < 10 ? ('0' + m) : m;
-            let d = date.getDate();
-            d = d < 10 ? ('0' + d) : d;
-            let h = date.getHours();
-            let minute = date.getMinutes();
-            minute = minute < 10 ? ('0' + minute) : minute;
-            return y + '-' + m + '-' + d;
-        },
-        format(year, month, day) {
-            month++
-            month < 10 && (month = '0' + month)
-            day < 10 && (day = '0' + day)
-            return year + '-' + month + '-' + day;
-        },
-        // 组装成一周的数据
-        getWeek(year, month, day) {
-            // year,month,day为选中当天的年月日
-            let dt = new Date(year, month, day)
-            let weekArr = []
-            let dt_first = new Date(year, month, day - ((dt.getDay() + 6) % 7))
-            let week = []
-            // 循环选中当天所在那一周的每一天
-            for (let j = 0; j < 7; j++) {
-                let newdt = new Date(dt_first.getFullYear(), dt_first.getMonth(), dt_first.getDate() + j)
-                let _year = newdt.getFullYear()
-                let _month = newdt.getMonth()
-                let _day = newdt.getDate()
-                week.push({
-                  mode: 'week',
-                  day: _day,
-                  year: _year,
-                  month: _month,
-                  date: this.format(_year, _month, _day),
-                  // 日历要显示的其他内容
-                  thing: this.ifOrder(_year, _month, _day),
-                  nongLi: format.solar2lunar(_year, _month + 1, _day),
-                  isToday: this.today.getFullYear() === _year && this.today.getMonth() === _month && this.today.getDate() === _day,
-                  isChecked: false,
-                  otherMonth: _month !== month
-                })
-            }
-          weekArr.push(week)
-          return weekArr
-        },
+      // TODO:待优化
+      formatDateTime(date, format = 'YYYY-MM-dd') {
+        const formatArr = format.split('-');
+        const monthFormat = formatArr[1];
+        const dayFormat = formatArr[2];
+        let y = date.getFullYear();
+        let m = date.getMonth() + 1;
+        if (monthFormat.length === 2) {
+          m = m < 10 ? ('0' + m) : m;
+        }
+        let d = date.getDate();
+        if (dayFormat && dayFormat.length === 2) {
+          d = d < 10 ? ('0' + d) : d;
+        }
+        if (dayFormat) {
+          return y + '-' + m + '-' + d;
+        } else {
+          return y + '-' + m
+        }
+      },
+      format(year, month, day) {
+        month++
+        month < 10 && (month = '0' + month)
+        day < 10 && (day = '0' + day)
+        return year + '-' + month + '-' + day;
+      },
+      // 组装成一周的数据
+      getWeek(year, month, day) {
+        // year,month,day为选中当天的年月日
+        let dt = new Date(year, month, day)
+        let weekArr = []
+        let dt_first = new Date(year, month, day - ((dt.getDay() + 6) % 7))
+        let week = []
+        // 循环选中当天所在那一周的每一天
+        for (let j = 0; j < 7; j++) {
+          let newdt = new Date(dt_first.getFullYear(), dt_first.getMonth(), dt_first.getDate() + j)
+          let _year = newdt.getFullYear()
+          let _month = newdt.getMonth()
+          let _day = newdt.getDate()
+          week.push({
+            mode: 'week',
+            day: _day,
+            year: _year,
+            month: _month,
+            date: this.format(_year, _month, _day),
+            // 日历要显示的其他内容
+            thing: this.ifOrder(_year, _month, _day),
+            nongLi: format.solar2lunar(_year, _month + 1, _day),
+            isToday: this.today.getFullYear() === _year && this.today.getMonth() === _month && this.today.getDate() === _day,
+            isChecked: false,
+            otherMonth: _month !== month
+          })
+        }
+        weekArr.push(week)
+        return weekArr
+      },
       // 创建单月历
       getMonth(year, month) {
         let monthArr = []
@@ -286,10 +310,14 @@ export default {
           } else {
             const tmpDate = new Date(year, month + index, 0)
             const maxDay = tmpDate.getDate()
-            const _day = maxDay < date ? maxDay : date
-            console.log(_day)
+            const _day = Math.min(maxDay, date)
             this.currentDate = new Date(year, month + index, _day)
+            // 非“点击”选择某一个日期
             if (!is_click) {
+              if (this.swiperActive) {
+                this.selectedDate = this.currentDate
+                this.$emit('change', this.selectedDate)
+              }
             }
             this.get3month()
           }

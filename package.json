@@ -1,6 +1,6 @@
 {
   "name": "v-calendar-mobile",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "calendar for mobile",
   "main": "/dist/index.js",
   "scripts": {

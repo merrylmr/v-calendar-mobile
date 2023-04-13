@@ -67,7 +67,6 @@ module.exports = {
                 terserOptions: {
                     ecma: 5,
                     compress: {
-                        // TODO: 未生效
                         drop_console: true,
                         drop_debugger: false,
                     },
